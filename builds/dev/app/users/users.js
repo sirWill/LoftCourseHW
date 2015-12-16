@@ -53,6 +53,9 @@
         return _d;
       });
     };
+    o.getUser = function(_id){
+      return $firebaseObject(usersRef.child(_id)).$loaded();
+    };
 
 
     return o;

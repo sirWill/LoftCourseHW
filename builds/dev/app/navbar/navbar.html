@@ -12,10 +12,14 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li ng-class="{'active':currentPage=='home'}"><a href="#/home">Home</a></li>
-        <li ng-class="{'active':currentPage=='users'}"><a href="#/users">Users</a></li>
+        <li ng-class="{'active':currentPage=='home'}"><a href="#/home">Главная</a></li>
+        <li ng-class="{'active':currentPage=='users'}"><a href="#/users">Пользователи</a></li>
       </ul>
-      <ul class="nav navbar-nav navbar-right">
+      <ul class="nav navbar-nav navbar-right" ng-if="currentUser.loggedIn">
+        <li><a href="javascript:;">{{ currentUser.fullname }}</a></li>
+        <li><a href="javascript:;" ng-click="logout()">Выйти</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right" ng-hide="currentUser.loggedIn">
         <li><a href="#/signin">Вход</a></li>
         <li><a href="#/signup">Регистрация</a></li>
       </ul>

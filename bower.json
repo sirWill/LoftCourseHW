@@ -18,6 +18,8 @@
     "angular-mocks": "~1.4.7",
     "bootstrap": "~3.3.5",
     "angular-bootstrap": "~0.14.3",
-    "angular-route": "~1.4.7"
+    "angular-route": "~1.4.7",
+    "firebase": "~2.3.2",
+    "angularfire": "~1.1.3"
   }
 }

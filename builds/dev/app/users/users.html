@@ -1,45 +1,17 @@
 <div class="jumbotron">
   <h1>Users page</h1>
-  <input class="form-control" ng-model="enter" type="text">
-  <table class="table">
-    <thead>
-      <tr>
-        <th>
-          #
-        </th>
-        <th>
-          Name
-        </th>
-        <th>
-          Color
-        </th>
-        <th>
-          Age
-        </th>
-        <th>
-          Registered date
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr ng-repeat="user in hc.users | filter: enter">
-        <td>
-          {{$index+1}}
-        </td>
-        <td>
-          {{user.name.first}}
-          {{user.name.last}}
-        </td>
-        <td>
-          {{user.eyeColor}}
-        </td>
-        <td>
-          {{user.age}}
-        </td>
-        <td>
-          {{user.registered | dateFilter}}
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <table class="table table-hover users-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Fullname</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="user in uc.users">
+      <td>{{$index+1}}</td>
+      <td>{{user.name}} {{user.surname}}</td>
+    </tr>
+  </tbody>
+</table>
 </div>

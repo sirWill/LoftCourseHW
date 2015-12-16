@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html ng-app="time">
+
 <head>
   <meta charset="utf-8">
-  <title>TimeTracker</title>
+  <title>TimeDem</title>
   <link rel="stylesheet" href="app.css">
   <link rel="stylesheet" href="theme.css">
 </head>
+
 <body ng-cloak>
 
   <ng-include src="'app/navbar/navbar.html'"></ng-include>
-  <div class="container">
-    <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</uib-alert>
-  </div>
-
-    <div class="container" ng-view></div>
+  <div ng-view></div>
 
   <script src="libs.js"></script>
   <script src="app.js"></script>
+
 </body>
+
 </html>

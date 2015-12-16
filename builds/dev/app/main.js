@@ -6,8 +6,12 @@
     .module('time', [
       'ngRoute',
       'ui.bootstrap',
+      'time.home',
       'time.users',
+      'time.registration',
+      'time.dbc',
     ])
+    .constant('FURL', 'https://timedem.firebaseio.com/')
     .controller('MainCtrl', MainController)
     .run(MainRun)
     .config(MainConfig);
@@ -42,7 +46,7 @@
   function MainConfig($routeProvider, $logProvider) {
     console.log('Main Config');
     $routeProvider.otherwise({
-      redirectTo: '/'
+      redirectTo: '/home'
     });
     $logProvider.debugEnabled(false);
   }

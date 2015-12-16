@@ -20,6 +20,8 @@ gulp.task('js',function(){
       'bower_components/angular/angular.js',
       'bower_components/angular-route/angular-route.js',
       'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
+      'bower_components/firebase/firebase-debug.js',
+      'bower_components/angularfire/dist/angularfire.js'
     ])
     .pipe(concat('libs.js'))
     .pipe(gulp.dest('builds/dev'));
@@ -49,7 +51,7 @@ gulp.task('webserver', function(){
     .pipe(webserver({
       livereload: true,
       open: true,
-      port: 8030,
+      port: 8034,
     }));
 })
 

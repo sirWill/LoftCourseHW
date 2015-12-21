@@ -4,7 +4,7 @@
 
   angular
     .module('time', [
-      'ngRoute',
+      'ui.router',
       'ui.bootstrap',
       'time.home',
       'time.users',
@@ -45,14 +45,12 @@
   MainRun.$inject = ["$log", "$rootScope"];
 
   // @ngInject
-  function MainConfig($routeProvider, $logProvider) {
+  function MainConfig($urlRouterProvider, $logProvider) {
     console.log('Main Config');
-    $routeProvider.otherwise({
-      redirectTo: '/home'
-    });
+    $urlRouterProvider.otherwise('/home');
     $logProvider.debugEnabled(false);
   }
-  MainConfig.$inject = ["$routeProvider", "$logProvider"];
+  MainConfig.$inject = ["$urlRouterProvider", "$logProvider"];
 
 })();
 
@@ -89,7 +87,6 @@
 
   angular
     .module('time.home', [
-      'ngRoute',
     ])
     .controller('HomeCtrl', HomeController)
     .run(/*@ngInject*/["$log", function($log){$log.debug('Home Run')}])
@@ -109,16 +106,17 @@
     HomeController.$inject = ["$scope", "$log", "$rootScope"];;
 
     // @ngInject
-    function HomeConfig ($routeProvider) {
+    function HomeConfig ($stateProvider) {
       console.log('Home Config');
-      $routeProvider
-        .when('/home', {
+      $stateProvider
+        .state('home', {
+          url: '/home',
           templateUrl: 'app/home/home.html',
           controller: 'HomeCtrl',
           controllerAs: 'hc'
         });
     }
-    HomeConfig.$inject = ["$routeProvider"];
+    HomeConfig.$inject = ["$stateProvider"];
 })();
 
 ;(function(){
@@ -222,20 +220,22 @@
   registrationFactory.$inject = ["dbc", "$rootScope", "users"];
 
   // @ngInject
-  function registrationConfig($routeProvider){
-    $routeProvider
-    .when('/signin', {
+  function registrationConfig($stateProvider){
+    $stateProvider
+    .state('signin', {
+      url: '/signin',
       templateUrl: 'app/registration/signin.html',
       controller: 'RegistrationCtrl',
       controllerAs: 'rc'
     })
-    .when('/signup', {
+    .state('signup', {
+      url: '/signup',
         templateUrl: 'app/registration/signup.html',
         controller: 'RegistrationCtrl',
         controllerAs: 'rc'
       });
   }
-  registrationConfig.$inject = ["$routeProvider"];
+  registrationConfig.$inject = ["$stateProvider"];
 
 })();
 
@@ -245,7 +245,6 @@
 
   angular
     .module('time.users', [
-      'ngRoute'
     ])
     .controller('usersCtrl', UsersController)
     .run( /*@ngInject*/ ["$log", function($log) {
@@ -272,15 +271,16 @@
   UsersController.$inject = ["$scope", "$log", "$rootScope", "users"];
 
   // @ngInject
-  function UsersConfig($routeProvider){
-    $routeProvider
-      .when('/users', {
+  function UsersConfig($stateProvider){
+    $stateProvider
+      .state('users', {
+        url: '/users',
         templateUrl: 'app/users/users.html',
         controller: 'usersCtrl',
         controllerAs: 'uc'
       });
   }
-  UsersConfig.$inject = ["$routeProvider"];
+  UsersConfig.$inject = ["$stateProvider"];
 
   // @ngInject
   function usersFactory ($q, $http, dbc, $firebaseArray, $firebaseObject) {

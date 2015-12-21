@@ -18,7 +18,8 @@ gulp.task('js',function(){
     .pipe(gulp.dest('builds/dev'));
   gulp.src([
       'bower_components/angular/angular.js',
-      'bower_components/angular-route/angular-route.js',
+    //  'bower_components/angular-route/angular-route.js',
+      'bower_components/angular-ui-router/release/angular-ui-router.js',
       'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
       'bower_components/firebase/firebase-debug.js',
       'bower_components/angularfire/dist/angularfire.js'
@@ -51,7 +52,7 @@ gulp.task('webserver', function(){
     .pipe(webserver({
       livereload: true,
       open: true,
-      port: 8034,
+      port: 8031,
     }));
 })
 

@@ -3,7 +3,6 @@
 
   angular
     .module('time.home', [
-      'ngRoute',
     ])
     .controller('HomeCtrl', HomeController)
     .run(/*@ngInject*/function($log){$log.debug('Home Run')})
@@ -22,10 +21,11 @@
     };
 
     // @ngInject
-    function HomeConfig ($routeProvider) {
+    function HomeConfig ($stateProvider) {
       console.log('Home Config');
-      $routeProvider
-        .when('/home', {
+      $stateProvider
+        .state('home', {
+          url: '/home',
           templateUrl: 'app/home/home.html',
           controller: 'HomeCtrl',
           controllerAs: 'hc'

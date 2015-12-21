@@ -4,7 +4,6 @@
 
   angular
     .module('time.users', [
-      'ngRoute'
     ])
     .controller('usersCtrl', UsersController)
     .run( /*@ngInject*/ function($log) {
@@ -30,9 +29,10 @@
   }
 
   // @ngInject
-  function UsersConfig($routeProvider){
-    $routeProvider
-      .when('/users', {
+  function UsersConfig($stateProvider){
+    $stateProvider
+      .state('users', {
+        url: '/users',
         templateUrl: 'app/users/users.html',
         controller: 'usersCtrl',
         controllerAs: 'uc'

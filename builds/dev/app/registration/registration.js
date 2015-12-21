@@ -97,14 +97,16 @@
   }
 
   // @ngInject
-  function registrationConfig($routeProvider){
-    $routeProvider
-    .when('/signin', {
+  function registrationConfig($stateProvider){
+    $stateProvider
+    .state('signin', {
+      url: '/signin',
       templateUrl: 'app/registration/signin.html',
       controller: 'RegistrationCtrl',
       controllerAs: 'rc'
     })
-    .when('/signup', {
+    .state('signup', {
+      url: '/signup',
         templateUrl: 'app/registration/signup.html',
         controller: 'RegistrationCtrl',
         controllerAs: 'rc'

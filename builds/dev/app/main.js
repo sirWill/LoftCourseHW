@@ -4,7 +4,7 @@
 
   angular
     .module('time', [
-      'ngRoute',
+      'ui.router',
       'ui.bootstrap',
       'time.home',
       'time.users',
@@ -43,11 +43,9 @@
   }
 
   // @ngInject
-  function MainConfig($routeProvider, $logProvider) {
+  function MainConfig($urlRouterProvider, $logProvider) {
     console.log('Main Config');
-    $routeProvider.otherwise({
-      redirectTo: '/home'
-    });
+    $urlRouterProvider.otherwise('/home');
     $logProvider.debugEnabled(false);
   }
 

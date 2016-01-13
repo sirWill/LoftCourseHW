@@ -21,6 +21,10 @@
       return ref.getAuth();
     }
 
+    o.isLogin = function(){
+    return auth.$getAuth();
+  }
+
     return o;
   }
 })();

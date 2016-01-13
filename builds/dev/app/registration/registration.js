@@ -103,12 +103,14 @@
       url: '/signin',
       templateUrl: 'app/registration/signin.html',
       controller: 'RegistrationCtrl',
+      authenticate: false,
       controllerAs: 'rc'
     })
     .state('signup', {
       url: '/signup',
         templateUrl: 'app/registration/signup.html',
         controller: 'RegistrationCtrl',
+        authenticate: false,
         controllerAs: 'rc'
       });
   }

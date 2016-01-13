@@ -4,6 +4,7 @@
 
   angular
     .module('time.users', [
+      'time.dbc'
     ])
     .controller('usersCtrl', UsersController)
     .run( /*@ngInject*/ function($log) {
@@ -35,7 +36,25 @@
         url: '/users',
         templateUrl: 'app/users/users.html',
         controller: 'usersCtrl',
-        controllerAs: 'uc'
+        authenticate: true,
+        controllerAs: 'uc',
+        resolve: {
+        'auth': ['dbc', '$q', '$state', function(dbc, $q, $state){
+          var deferred = $q.defer();
+          setTimeout(function(){
+            console.log('auth promise', dbc.get$Auth().$getAuth());
+            if(dbc.get$Auth().$getAuth() !== null){
+              console.log('Resolve!');
+              deferred.resolve();
+            }else{
+              console.log('Reject!');
+              $state.go('signin');
+              deferred.reject();
+            }
+          }, 50);
+          return deferred.promise;
+        }]
+      }
       });
   }
 

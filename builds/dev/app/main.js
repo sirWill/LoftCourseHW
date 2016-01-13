@@ -25,7 +25,7 @@
   }
 
   // @ngInject
-  function MainRun($log, $rootScope) {
+  function MainRun($log, $rootScope, $state, $stateParams, dbc) {
     $log.debug('Main Run');
 
     $rootScope.alerts = [];
@@ -40,6 +40,27 @@
     $rootScope.closeAlert = function(index) {
       $rootScope.alerts.splice(index, 1);
     };
+
+    $rootScope.$on('$stateChangeStart',
+        function(event, toState, toParams, fromState, fromParams) {
+          //console.log('toState:',toState, 'toParams:',toParams, 'fromState:',fromState, 'fromParams:',fromParams);
+          if (toState.authenticate && !dbc.isLogin()) {
+            $state.transitionTo('signin');
+            $rootScope.isLoggin = false;
+            event.preventDefault();
+          } else if (!toState.authenticate && dbc.isLogin()) {
+            $rootScope.isLoggin = true;
+            //$state.transitionTo('home');
+            //event.preventDefault();
+          } else if (!toState.authenticate && !dbc.isLogin()) {
+            //$state.transitionTo('home');
+            //event.preventDefault();
+          }
+        });
+
+    $rootScope.$state = $state;
+    $rootScope.$stateParams = $stateParams;
+
   }
 
   // @ngInject

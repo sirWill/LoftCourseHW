@@ -26,7 +26,7 @@
   MainController.$inject = ["$rootScope"];
 
   // @ngInject
-  function MainRun($log, $rootScope) {
+  function MainRun($log, $rootScope, $state, $stateParams, dbc) {
     $log.debug('Main Run');
 
     $rootScope.alerts = [];
@@ -41,8 +41,29 @@
     $rootScope.closeAlert = function(index) {
       $rootScope.alerts.splice(index, 1);
     };
+
+    $rootScope.$on('$stateChangeStart',
+        function(event, toState, toParams, fromState, fromParams) {
+          //console.log('toState:',toState, 'toParams:',toParams, 'fromState:',fromState, 'fromParams:',fromParams);
+          if (toState.authenticate && !dbc.isLogin()) {
+            $state.transitionTo('signin');
+            $rootScope.isLoggin = false;
+            event.preventDefault();
+          } else if (!toState.authenticate && dbc.isLogin()) {
+            $rootScope.isLoggin = true;
+            //$state.transitionTo('home');
+            //event.preventDefault();
+          } else if (!toState.authenticate && !dbc.isLogin()) {
+            //$state.transitionTo('home');
+            //event.preventDefault();
+          }
+        });
+
+    $rootScope.$state = $state;
+    $rootScope.$stateParams = $stateParams;
+
   }
-  MainRun.$inject = ["$log", "$rootScope"];
+  MainRun.$inject = ["$log", "$rootScope", "$state", "$stateParams", "dbc"];
 
   // @ngInject
   function MainConfig($urlRouterProvider, $logProvider) {
@@ -76,6 +97,10 @@
     o.getAuth = function(){
       return ref.getAuth();
     }
+
+    o.isLogin = function(){
+    return auth.$getAuth();
+  }
 
     return o;
   }
@@ -113,6 +138,7 @@
           url: '/home',
           templateUrl: 'app/home/home.html',
           controller: 'HomeCtrl',
+          authenticate: false,
           controllerAs: 'hc'
         });
     }
@@ -226,12 +252,14 @@
       url: '/signin',
       templateUrl: 'app/registration/signin.html',
       controller: 'RegistrationCtrl',
+      authenticate: false,
       controllerAs: 'rc'
     })
     .state('signup', {
       url: '/signup',
         templateUrl: 'app/registration/signup.html',
         controller: 'RegistrationCtrl',
+        authenticate: false,
         controllerAs: 'rc'
       });
   }
@@ -245,6 +273,7 @@
 
   angular
     .module('time.users', [
+      'time.dbc'
     ])
     .controller('usersCtrl', UsersController)
     .run( /*@ngInject*/ ["$log", function($log) {
@@ -277,7 +306,25 @@
         url: '/users',
         templateUrl: 'app/users/users.html',
         controller: 'usersCtrl',
-        controllerAs: 'uc'
+        authenticate: true,
+        controllerAs: 'uc',
+        resolve: {
+        'auth': ['dbc', '$q', '$state', function(dbc, $q, $state){
+          var deferred = $q.defer();
+          setTimeout(function(){
+            console.log('auth promise', dbc.get$Auth().$getAuth());
+            if(dbc.get$Auth().$getAuth() !== null){
+              console.log('Resolve!');
+              deferred.resolve();
+            }else{
+              console.log('Reject!');
+              $state.go('signin');
+              deferred.reject();
+            }
+          }, 50);
+          return deferred.promise;
+        }]
+      }
       });
   }
   UsersConfig.$inject = ["$stateProvider"];

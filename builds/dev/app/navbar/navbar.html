@@ -13,7 +13,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li ui-sref-active="active"><a ui-sref="home">Главная</a></li>
-        <li ui-sref-active="active" ng-if="currentUser.loggedIn"><a a ui-sref="users">Пользователи</a></li>
+        <li ui-sref-active="active"><a a ui-sref="users">Пользователи</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right" ng-if="currentUser.loggedIn">
         <li><a href="javascript:;">{{ currentUser.fullname }}</a></li>

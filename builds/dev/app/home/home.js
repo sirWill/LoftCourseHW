@@ -28,6 +28,7 @@
           url: '/home',
           templateUrl: 'app/home/home.html',
           controller: 'HomeCtrl',
+          authenticate: false,
           controllerAs: 'hc'
         });
     }

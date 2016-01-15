@@ -2,13 +2,16 @@
   <div class="row">
     <div class="col-lg-8 col-md-offset-2">
       <div class="input-group">
-        <input type="text" class="form-control" placeholder="Введите название задачи">
+        <input ng-model="taskName" type="text" class="form-control" placeholder="Введите название задачи">
         <span class="input-group-btn">
-          <button class="btn btn-default" type="button">Начать!</button>
+          <button class="btn btn-default" type="button" ng-click="hc.start()">Начать</button>
+          <button class="btn btn-default" id="button-stop" ng-click="hc.stop()">Пауза</button>
+          <button class="btn btn-default" id="button-reset" ng-click="hc.reset()">Сброс</button>
         </span>
       </div>
     </div>
   </div>
+
 
 </div>
 <div class="col-lg-8 col-md-offset-2">
@@ -29,13 +32,14 @@
         </th>
       </tr>
     </thead>
+    
     <tbody>
       <tr>
         <td>
-          Тестовая задача
+          {{taskName}}
         </td>
         <td>
-          00 : 00
+          <p><span id="seconds">00</span>:<span id="tens">00</span></p>
         </td>
         <td>
           0 $

@@ -2,11 +2,11 @@
   <div class="row">
     <div class="col-lg-8 col-md-offset-2">
       <div class="input-group">
-        <input ng-model="taskName" type="text" class="form-control" placeholder="Введите название задачи">
+        <input id="taskName" ng-model="taskName" type="text" class="form-control" placeholder="Введите название задачи">
         <span class="input-group-btn">
           <button class="btn btn-default" type="button" ng-click="hc.start()">Начать</button>
           <button class="btn btn-default" id="button-stop" ng-click="hc.stop()">Пауза</button>
-          <button class="btn btn-default" id="button-reset" ng-click="hc.reset()">Сброс</button>
+          <button class="btn btn-default" id="button-reset" ng-click="hc.reset()">Сохранить</button>
         </span>
       </div>
     </div>
@@ -15,9 +15,14 @@
 
 </div>
 <div class="col-lg-8 col-md-offset-2">
+  <p id="showTaskName">{{taskName}}</p>
+  <p><span id="seconds">00</span>:<span id="tens">00</span></p>
   <table class="table">
     <thead>
       <tr>
+        <th>
+          №
+        </th>
         <th>
           Название
         </th>
@@ -32,21 +37,14 @@
         </th>
       </tr>
     </thead>
-    
+
     <tbody>
-      <tr>
-        <td>
-          {{taskName}}
-        </td>
-        <td>
-          <p><span id="seconds">00</span>:<span id="tens">00</span></p>
-        </td>
-        <td>
-          0 $
-        </td>
-        <td>
-          Приостановлена
-        </td>
+      <tr ng-repeat="task in hc.tasks">
+        <td>{{$index+1}}</td>
+        <td>{{task.name}}</td>
+        <td>{{task.time}}</td>
+        <td>00</td>
+        <td>00</td>
       </tr>
     </tbody>
   </table>

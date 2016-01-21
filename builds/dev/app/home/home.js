@@ -18,10 +18,14 @@
     $log.debug('HomeController');
     var s = this;
 
+    var minutes = '00';
     var seconds = '00';
-    var tens = '00';
-    var appendTens = document.getElementById("tens");
+    var hours = '00';
+
     var appendSeconds = document.getElementById("seconds");
+    var appendMinutes = document.getElementById("minutes");
+    var appendHours = document.getElementById("hours");
+
     var buttonStart = document.getElementById('button-start');
     var buttonStop = document.getElementById('button-stop');
     var buttonReset = document.getElementById('button-reset');
@@ -38,57 +42,75 @@
 
 
     s.startTimer = function() {
-      tens++;
+      seconds++;
 
-      if (tens < 9) {
-        appendTens.innerHTML = "0" + tens;
-      }
-
-      if (tens > 9) {
-        appendTens.innerHTML = tens;
-
-      }
-
-      if (tens > 99) {
-        seconds++;
+      if (seconds < 9) {
         appendSeconds.innerHTML = "0" + seconds;
-        tens = 0;
-        appendTens.innerHTML = "0" + 0;
       }
 
       if (seconds > 9) {
         appendSeconds.innerHTML = seconds;
+
+      }
+
+      if (seconds > 59) {
+        minutes++;
+        appendMinutes.innerHTML = "0" + minutes;
+        seconds = 0;
+        appendSeconds.innerHTML = "0" + 0;
+      }
+
+      if (minutes > 9) {
+        appendMinutes.innerHTML = minutes;
+      }
+
+      if (minutes > 59) {
+        hours++;
+        appendHours.innerHTML = "0" + hours;
+        minutes = 0;
+        appendMinutes.innerHTML = "0" + 0;
       }
 
     }
-    s.start = function() {
-      clearInterval(Interval);
-      Interval = setInterval(s.startTimer, 10);
-    }
+    var timer = false;
 
-    s.stop = function() {
-      clearInterval(Interval);
-    }
+    s.start = function() {
+      if(!timer) {
+        timer = true;
+        clearInterval(Interval);
+        buttonStart.innerHTML = "Пауза";
+        Interval = setInterval(s.startTimer, 1000);
+      }
+      else if(timer){
+        clearInterval(Interval);
+        buttonStart.innerHTML = "Продолжить";
+        timer = false;
+      }
+    };
+
+
 
     s.reset = function() {
 
       clearInterval(Interval);
-      var curentTime = seconds + ":" + tens;
-      tens = "00";
+      var currentTime = hours + ":" + minutes + ":" + seconds;
       seconds = "00";
-      appendTens.innerHTML = tens;
+      minutes = "00";
+      hours = "00";
+      appendHours.innerHTML = hours;
       appendSeconds.innerHTML = seconds;
+      appendMinutes.innerHTML = minutes;
       showTaskName.innerHTML = "";
-
-      s.saveTask(curentTime);
+      buttonStart.innerHTML = "Начать";
+      s.saveTask(currentTime);
     }
-    s.saveTask = function(curentTime) {
+    s.saveTask = function(currentTime) {
       if (!taskName.value) {
         name = "(Без названия)"
       } else {
         var name = taskName.value;
       }
-      var task = new Task(name, curentTime);
+      var task = new Task(name, currentTime);
       s.tasks.push(task);
     }
     $rootScope.currentPage = 'home';

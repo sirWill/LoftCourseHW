@@ -75,6 +75,38 @@
 
 })();
 
+;(function(){
+  'use strict';
+  angular.module('time.dbc', [
+    'firebase',
+  ])
+  .factory('dbc', dbcFactory)
+
+  // @ngInject
+  function dbcFactory(FURL, $firebaseAuth)
+  {
+    var o = {};
+    var ref = new Firebase(FURL);
+    var auth = $firebaseAuth(ref);
+    o.getRef = function(){
+      return ref;
+    }
+    o.get$Auth = function(){
+      return auth;
+    }
+    o.getAuth = function(){
+      return ref.getAuth();
+    }
+
+    o.isLogin = function(){
+    return auth.$getAuth();
+  }
+
+    return o;
+  }
+  dbcFactory.$inject = ["FURL", "$firebaseAuth"];
+})();
+
 ;
 (function() {
   'use strict';
@@ -95,10 +127,14 @@
     $log.debug('HomeController');
     var s = this;
 
+    var minutes = '00';
     var seconds = '00';
-    var tens = '00';
-    var appendTens = document.getElementById("tens");
+    var hours = '00';
+
     var appendSeconds = document.getElementById("seconds");
+    var appendMinutes = document.getElementById("minutes");
+    var appendHours = document.getElementById("hours");
+
     var buttonStart = document.getElementById('button-start');
     var buttonStop = document.getElementById('button-stop');
     var buttonReset = document.getElementById('button-reset');
@@ -115,57 +151,75 @@
 
 
     s.startTimer = function() {
-      tens++;
+      seconds++;
 
-      if (tens < 9) {
-        appendTens.innerHTML = "0" + tens;
-      }
-
-      if (tens > 9) {
-        appendTens.innerHTML = tens;
-
-      }
-
-      if (tens > 99) {
-        seconds++;
+      if (seconds < 9) {
         appendSeconds.innerHTML = "0" + seconds;
-        tens = 0;
-        appendTens.innerHTML = "0" + 0;
       }
 
       if (seconds > 9) {
         appendSeconds.innerHTML = seconds;
+
+      }
+
+      if (seconds > 59) {
+        minutes++;
+        appendMinutes.innerHTML = "0" + minutes;
+        seconds = 0;
+        appendSeconds.innerHTML = "0" + 0;
+      }
+
+      if (minutes > 9) {
+        appendMinutes.innerHTML = minutes;
+      }
+
+      if (minutes > 59) {
+        hours++;
+        appendHours.innerHTML = "0" + hours;
+        minutes = 0;
+        appendMinutes.innerHTML = "0" + 0;
       }
 
     }
-    s.start = function() {
-      clearInterval(Interval);
-      Interval = setInterval(s.startTimer, 10);
-    }
+    var timer = false;
 
-    s.stop = function() {
-      clearInterval(Interval);
-    }
+    s.start = function() {
+      if(!timer) {
+        timer = true;
+        clearInterval(Interval);
+        buttonStart.innerHTML = "Пауза";
+        Interval = setInterval(s.startTimer, 1000);
+      }
+      else if(timer){
+        clearInterval(Interval);
+        buttonStart.innerHTML = "Продолжить";
+        timer = false;
+      }
+    };
+
+
 
     s.reset = function() {
 
       clearInterval(Interval);
-      var curentTime = seconds + ":" + tens;
-      tens = "00";
+      var currentTime = hours + ":" + minutes + ":" + seconds;
       seconds = "00";
-      appendTens.innerHTML = tens;
+      minutes = "00";
+      hours = "00";
+      appendHours.innerHTML = hours;
       appendSeconds.innerHTML = seconds;
+      appendMinutes.innerHTML = minutes;
       showTaskName.innerHTML = "";
-
-      s.saveTask(curentTime);
+      buttonStart.innerHTML = "Начать";
+      s.saveTask(currentTime);
     }
-    s.saveTask = function(curentTime) {
+    s.saveTask = function(currentTime) {
       if (!taskName.value) {
         name = "(Без названия)"
       } else {
         var name = taskName.value;
       }
-      var task = new Task(name, curentTime);
+      var task = new Task(name, currentTime);
       s.tasks.push(task);
     }
     $rootScope.currentPage = 'home';
@@ -185,6 +239,92 @@
       });
   }
   HomeConfig.$inject = ["$stateProvider"];
+})();
+
+;
+(function() {
+  'use strict';
+
+  angular
+    .module('time.users', [
+      'time.dbc'
+    ])
+    .controller('usersCtrl', UsersController)
+    .run( /*@ngInject*/ ["$log", function($log) {
+      $log.debug('Users Run')
+    }])
+    .config(UsersConfig)
+    .factory('users', usersFactory)
+
+  /**
+   * Home Controller
+   */
+  // @ngInject
+  function UsersController($scope, $log, $rootScope, users) {
+    $log.debug('UsersController');
+    var s = this;
+
+    s.users = [];
+    users.getUsers().then(function(_data){
+      s.users = _data;
+    })
+
+    $rootScope.currentPage = 'users';
+  }
+  UsersController.$inject = ["$scope", "$log", "$rootScope", "users"];
+
+  // @ngInject
+  function UsersConfig($stateProvider){
+    $stateProvider
+      .state('users', {
+        url: '/users',
+        templateUrl: 'app/users/users.html',
+        controller: 'usersCtrl',
+        authenticate: true,
+        controllerAs: 'uc',
+        resolve: {
+        'auth': ['dbc', '$q', '$state', function(dbc, $q, $state){
+          var deferred = $q.defer();
+          setTimeout(function(){
+            console.log('auth promise', dbc.get$Auth().$getAuth());
+            if(dbc.get$Auth().$getAuth() !== null){
+              console.log('Resolve!');
+              deferred.resolve();
+            }else{
+              console.log('Reject!');
+              $state.go('signin');
+              deferred.reject();
+            }
+          }, 50);
+          return deferred.promise;
+        }]
+      }
+      });
+  }
+  UsersConfig.$inject = ["$stateProvider"];
+
+  // @ngInject
+  function usersFactory ($q, $http, dbc, $firebaseArray, $firebaseObject) {
+    var o = {};
+    var ref = dbc.getRef();
+    var usersRef = ref.child('users');// new Firebase(FURL + 'users/')
+
+    var users = null;
+
+    o.getUsers = function(){
+      return $firebaseArray(usersRef).$loaded(function(_d){
+        console.log("got users list with length:", _d.length);
+        return _d;
+      });
+    };
+    o.getUser = function(_id){
+      return $firebaseObject(usersRef.child(_id)).$loaded();
+    };
+
+
+    return o;
+  }
+  usersFactory.$inject = ["$q", "$http", "dbc", "$firebaseArray", "$firebaseObject"];
 })();
 
 ;(function(){
@@ -307,122 +447,4 @@
   }
   registrationConfig.$inject = ["$stateProvider"];
 
-})();
-
-;(function(){
-  'use strict';
-  angular.module('time.dbc', [
-    'firebase',
-  ])
-  .factory('dbc', dbcFactory)
-
-  // @ngInject
-  function dbcFactory(FURL, $firebaseAuth)
-  {
-    var o = {};
-    var ref = new Firebase(FURL);
-    var auth = $firebaseAuth(ref);
-    o.getRef = function(){
-      return ref;
-    }
-    o.get$Auth = function(){
-      return auth;
-    }
-    o.getAuth = function(){
-      return ref.getAuth();
-    }
-
-    o.isLogin = function(){
-    return auth.$getAuth();
-  }
-
-    return o;
-  }
-  dbcFactory.$inject = ["FURL", "$firebaseAuth"];
-})();
-
-;
-(function() {
-  'use strict';
-
-  angular
-    .module('time.users', [
-      'time.dbc'
-    ])
-    .controller('usersCtrl', UsersController)
-    .run( /*@ngInject*/ ["$log", function($log) {
-      $log.debug('Users Run')
-    }])
-    .config(UsersConfig)
-    .factory('users', usersFactory)
-
-  /**
-   * Home Controller
-   */
-  // @ngInject
-  function UsersController($scope, $log, $rootScope, users) {
-    $log.debug('UsersController');
-    var s = this;
-
-    s.users = [];
-    users.getUsers().then(function(_data){
-      s.users = _data;
-    })
-
-    $rootScope.currentPage = 'users';
-  }
-  UsersController.$inject = ["$scope", "$log", "$rootScope", "users"];
-
-  // @ngInject
-  function UsersConfig($stateProvider){
-    $stateProvider
-      .state('users', {
-        url: '/users',
-        templateUrl: 'app/users/users.html',
-        controller: 'usersCtrl',
-        authenticate: true,
-        controllerAs: 'uc',
-        resolve: {
-        'auth': ['dbc', '$q', '$state', function(dbc, $q, $state){
-          var deferred = $q.defer();
-          setTimeout(function(){
-            console.log('auth promise', dbc.get$Auth().$getAuth());
-            if(dbc.get$Auth().$getAuth() !== null){
-              console.log('Resolve!');
-              deferred.resolve();
-            }else{
-              console.log('Reject!');
-              $state.go('signin');
-              deferred.reject();
-            }
-          }, 50);
-          return deferred.promise;
-        }]
-      }
-      });
-  }
-  UsersConfig.$inject = ["$stateProvider"];
-
-  // @ngInject
-  function usersFactory ($q, $http, dbc, $firebaseArray, $firebaseObject) {
-    var o = {};
-    var ref = dbc.getRef();
-    var usersRef = ref.child('users');// new Firebase(FURL + 'users/')
-
-    var users = null;
-
-    o.getUsers = function(){
-      return $firebaseArray(usersRef).$loaded(function(_d){
-        console.log("got users list with length:", _d.length);
-        return _d;
-      });
-    };
-    o.getUser = function(_id){
-      return $firebaseObject(usersRef.child(_id)).$loaded();
-    };
-
-
-    return o;
-  }
-  usersFactory.$inject = ["$q", "$http", "dbc", "$firebaseArray", "$firebaseObject"];
 })();

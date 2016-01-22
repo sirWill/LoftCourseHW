@@ -130,25 +130,29 @@
     var minutes = '00';
     var seconds = '00';
     var hours = '00';
+    var showTaskName = document.getElementById('showTaskName');
+    var Interval;
+    var timer = false;
+    var hourCost;
+    var projectCost = 0;
 
     var appendSeconds = document.getElementById("seconds");
     var appendMinutes = document.getElementById("minutes");
     var appendHours = document.getElementById("hours");
-
     var buttonStart = document.getElementById('button-start');
     var buttonStop = document.getElementById('button-stop');
     var buttonReset = document.getElementById('button-reset');
     var taskName = document.getElementById('taskName');
-    var showTaskName = document.getElementById('showTaskName');
-    var Interval;
+    var timeCost = document.getElementById('timeCost');
+
 
     s.tasks = [];
 
-    function Task(name, time) {
+    function Task(name, time, cost) {
       this.name = name;
       this.time = time;
+      this.cost = cost;
     }
-
 
     s.startTimer = function() {
       seconds++;
@@ -175,29 +179,28 @@
 
       if (minutes > 59) {
         hours++;
+        projectCost = projectCost + +hourCost;
         appendHours.innerHTML = "0" + hours;
         minutes = 0;
         appendMinutes.innerHTML = "0" + 0;
       }
-
+      console.log(projectCost);
     }
-    var timer = false;
 
-    s.start = function() {
-      if(!timer) {
+    s.start = function(projectCost) {
+      if (!timer) {
         timer = true;
         clearInterval(Interval);
         buttonStart.innerHTML = "Пауза";
-        Interval = setInterval(s.startTimer, 1000);
-      }
-      else if(timer){
+        Interval = setInterval(s.startTimer, 1);
+      } else if (timer) {
         clearInterval(Interval);
         buttonStart.innerHTML = "Продолжить";
         timer = false;
       }
-    };
-
-
+      hourCost = timeCost.value;
+      console.log(hourCost);
+        };
 
     s.reset = function() {
 
@@ -211,17 +214,20 @@
       appendMinutes.innerHTML = minutes;
       showTaskName.innerHTML = "";
       buttonStart.innerHTML = "Начать";
-      s.saveTask(currentTime);
+      s.saveTask(currentTime, projectCost);
     }
-    s.saveTask = function(currentTime) {
+
+    s.saveTask = function(currentTime, projectCost) {
       if (!taskName.value) {
-        name = "(Без названия)"
+        name = "(Без названия)";
       } else {
         var name = taskName.value;
       }
-      var task = new Task(name, currentTime);
+      var task = new Task(name, currentTime, projectCost);
       s.tasks.push(task);
+      console.log(s.tasks);
     }
+
     $rootScope.currentPage = 'home';
   }
   HomeController.$inject = ["$scope", "$log", "$rootScope"];;
@@ -239,92 +245,6 @@
       });
   }
   HomeConfig.$inject = ["$stateProvider"];
-})();
-
-;
-(function() {
-  'use strict';
-
-  angular
-    .module('time.users', [
-      'time.dbc'
-    ])
-    .controller('usersCtrl', UsersController)
-    .run( /*@ngInject*/ ["$log", function($log) {
-      $log.debug('Users Run')
-    }])
-    .config(UsersConfig)
-    .factory('users', usersFactory)
-
-  /**
-   * Home Controller
-   */
-  // @ngInject
-  function UsersController($scope, $log, $rootScope, users) {
-    $log.debug('UsersController');
-    var s = this;
-
-    s.users = [];
-    users.getUsers().then(function(_data){
-      s.users = _data;
-    })
-
-    $rootScope.currentPage = 'users';
-  }
-  UsersController.$inject = ["$scope", "$log", "$rootScope", "users"];
-
-  // @ngInject
-  function UsersConfig($stateProvider){
-    $stateProvider
-      .state('users', {
-        url: '/users',
-        templateUrl: 'app/users/users.html',
-        controller: 'usersCtrl',
-        authenticate: true,
-        controllerAs: 'uc',
-        resolve: {
-        'auth': ['dbc', '$q', '$state', function(dbc, $q, $state){
-          var deferred = $q.defer();
-          setTimeout(function(){
-            console.log('auth promise', dbc.get$Auth().$getAuth());
-            if(dbc.get$Auth().$getAuth() !== null){
-              console.log('Resolve!');
-              deferred.resolve();
-            }else{
-              console.log('Reject!');
-              $state.go('signin');
-              deferred.reject();
-            }
-          }, 50);
-          return deferred.promise;
-        }]
-      }
-      });
-  }
-  UsersConfig.$inject = ["$stateProvider"];
-
-  // @ngInject
-  function usersFactory ($q, $http, dbc, $firebaseArray, $firebaseObject) {
-    var o = {};
-    var ref = dbc.getRef();
-    var usersRef = ref.child('users');// new Firebase(FURL + 'users/')
-
-    var users = null;
-
-    o.getUsers = function(){
-      return $firebaseArray(usersRef).$loaded(function(_d){
-        console.log("got users list with length:", _d.length);
-        return _d;
-      });
-    };
-    o.getUser = function(_id){
-      return $firebaseObject(usersRef.child(_id)).$loaded();
-    };
-
-
-    return o;
-  }
-  usersFactory.$inject = ["$q", "$http", "dbc", "$firebaseArray", "$firebaseObject"];
 })();
 
 ;(function(){
@@ -447,4 +367,90 @@
   }
   registrationConfig.$inject = ["$stateProvider"];
 
+})();
+
+;
+(function() {
+  'use strict';
+
+  angular
+    .module('time.users', [
+      'time.dbc'
+    ])
+    .controller('usersCtrl', UsersController)
+    .run( /*@ngInject*/ ["$log", function($log) {
+      $log.debug('Users Run')
+    }])
+    .config(UsersConfig)
+    .factory('users', usersFactory)
+
+  /**
+   * Home Controller
+   */
+  // @ngInject
+  function UsersController($scope, $log, $rootScope, users) {
+    $log.debug('UsersController');
+    var s = this;
+
+    s.users = [];
+    users.getUsers().then(function(_data){
+      s.users = _data;
+    })
+
+    $rootScope.currentPage = 'users';
+  }
+  UsersController.$inject = ["$scope", "$log", "$rootScope", "users"];
+
+  // @ngInject
+  function UsersConfig($stateProvider){
+    $stateProvider
+      .state('users', {
+        url: '/users',
+        templateUrl: 'app/users/users.html',
+        controller: 'usersCtrl',
+        authenticate: true,
+        controllerAs: 'uc',
+        resolve: {
+        'auth': ['dbc', '$q', '$state', function(dbc, $q, $state){
+          var deferred = $q.defer();
+          setTimeout(function(){
+            console.log('auth promise', dbc.get$Auth().$getAuth());
+            if(dbc.get$Auth().$getAuth() !== null){
+              console.log('Resolve!');
+              deferred.resolve();
+            }else{
+              console.log('Reject!');
+              $state.go('signin');
+              deferred.reject();
+            }
+          }, 50);
+          return deferred.promise;
+        }]
+      }
+      });
+  }
+  UsersConfig.$inject = ["$stateProvider"];
+
+  // @ngInject
+  function usersFactory ($q, $http, dbc, $firebaseArray, $firebaseObject) {
+    var o = {};
+    var ref = dbc.getRef();
+    var usersRef = ref.child('users');// new Firebase(FURL + 'users/')
+
+    var users = null;
+
+    o.getUsers = function(){
+      return $firebaseArray(usersRef).$loaded(function(_d){
+        console.log("got users list with length:", _d.length);
+        return _d;
+      });
+    };
+    o.getUser = function(_id){
+      return $firebaseObject(usersRef.child(_id)).$loaded();
+    };
+
+
+    return o;
+  }
+  usersFactory.$inject = ["$q", "$http", "dbc", "$firebaseArray", "$firebaseObject"];
 })();

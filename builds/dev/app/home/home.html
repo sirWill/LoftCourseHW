@@ -2,6 +2,7 @@
   <div class="row">
     <div class="col-lg-8 col-md-offset-2">
       <div class="input-group">
+        <input id="timeCost" ng-model="timeCost"type="number" class="form-control" placeholder="Введите стоимость часа" required>
         <input id="taskName" ng-model="taskName" type="text" class="form-control" placeholder="Введите название задачи">
         <span class="input-group-btn">
           <button class="btn btn-default" id="button-start"type="button" ng-click="hc.start()">Начать</button>
@@ -15,6 +16,8 @@
 </div>
 <div class="col-lg-8 col-md-offset-2">
   <p id="showTaskName">{{taskName}}</p>
+  <p id="showTaskCost">{{timeCost}}</p>
+
   <p><span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span></p>
   <table class="table">
     <thead>
@@ -42,7 +45,7 @@
         <td>{{$index+1}}</td>
         <td><input type="text" class="task-inner" placeholder={{task.name}}></td>
         <td>{{task.time}}</td>
-        <td>00</td>
+        <td>{{task.cost | currency:"USD$"}}</td>
         <td>00</td>
       </tr>
     </tbody>

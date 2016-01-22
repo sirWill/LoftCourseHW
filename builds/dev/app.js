@@ -145,7 +145,6 @@
     var taskName = document.getElementById('taskName');
     var timeCost = document.getElementById('timeCost');
 
-
     s.tasks = [];
 
     function Task(name, time, cost) {
@@ -200,7 +199,7 @@
       }
       hourCost = timeCost.value;
       console.log(hourCost);
-        };
+    };
 
     s.reset = function() {
 
@@ -225,6 +224,8 @@
       }
       var task = new Task(name, currentTime, projectCost);
       s.tasks.push(task);
+      localStorage.tasks = JSON.stringify(s.tasks);
+
       console.log(s.tasks);
     }
 

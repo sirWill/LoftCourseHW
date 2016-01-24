@@ -2,6 +2,9 @@
 (function() {
   'use strict';
 
+  MainController.$inject = ["$rootScope"];
+  MainRun.$inject = ["$log", "$rootScope", "$state", "$stateParams", "dbc"];
+  MainConfig.$inject = ["$urlRouterProvider", "$logProvider"];
   angular
     .module('time', [
       'ui.router',
@@ -23,7 +26,6 @@
     s.hello_message = "Привет, мир!";
     $rootScope.root = 'Root 1';
   }
-  MainController.$inject = ["$rootScope"];
 
   // @ngInject
   function MainRun($log, $rootScope, $state, $stateParams, dbc) {
@@ -63,7 +65,6 @@
     $rootScope.$stateParams = $stateParams;
 
   }
-  MainRun.$inject = ["$log", "$rootScope", "$state", "$stateParams", "dbc"];
 
   // @ngInject
   function MainConfig($urlRouterProvider, $logProvider) {
@@ -71,12 +72,12 @@
     $urlRouterProvider.otherwise('/home');
     $logProvider.debugEnabled(false);
   }
-  MainConfig.$inject = ["$urlRouterProvider", "$logProvider"];
 
 })();
 
 ;(function(){
   'use strict';
+  dbcFactory.$inject = ["FURL", "$firebaseAuth"];
   angular.module('time.dbc', [
     'firebase',
   ])
@@ -104,13 +105,14 @@
 
     return o;
   }
-  dbcFactory.$inject = ["FURL", "$firebaseAuth"];
 })();
 
 ;
 (function() {
   'use strict';
 
+  HomeController.$inject = ["$scope", "$log", "$rootScope", "$interval"];
+  HomeConfig.$inject = ["$stateProvider"];
   angular
     .module('time.home', [])
     .controller('HomeCtrl', HomeController)
@@ -123,115 +125,69 @@
    * Home Controller
    */
   // @ngInject
-  function HomeController($scope, $log, $rootScope) {
+  function HomeController($scope, $log, $rootScope, $interval) {
     $log.debug('HomeController');
     var s = this;
 
-    var minutes = '00';
-    var seconds = '00';
-    var hours = '00';
-    var showTaskName = document.getElementById('showTaskName');
-    var Interval;
-    var timer = false;
-    var hourCost;
-    var projectCost = 0;
+    s.timer = null;
 
-    var appendSeconds = document.getElementById("seconds");
-    var appendMinutes = document.getElementById("minutes");
-    var appendHours = document.getElementById("hours");
-    var buttonStart = document.getElementById('button-start');
-    var buttonStop = document.getElementById('button-stop');
-    var buttonReset = document.getElementById('button-reset');
-    var taskName = document.getElementById('taskName');
-    var timeCost = document.getElementById('timeCost');
+    s.newTask = {
+      name: null,
+      time: null,
+      cost: null
+    };
+
+    var startDate, curDate, curTimerStart, timerVal, timer = null;
+
+    s.startBtnText = 'Начать';
 
     s.tasks = [];
 
-    function Task(name, time, cost) {
-      this.name = name;
-      this.time = time;
-      this.cost = cost;
-    }
-
-    s.startTimer = function() {
-      seconds++;
-
-      if (seconds < 9) {
-        appendSeconds.innerHTML = "0" + seconds;
-      }
-
-      if (seconds > 9) {
-        appendSeconds.innerHTML = seconds;
-
-      }
-
-      if (seconds > 59) {
-        minutes++;
-        appendMinutes.innerHTML = "0" + minutes;
-        seconds = 0;
-        appendSeconds.innerHTML = "0" + 0;
-      }
-
-      if (minutes > 9) {
-        appendMinutes.innerHTML = minutes;
-      }
-
-      if (minutes > 59) {
-        hours++;
-        projectCost = projectCost + +hourCost;
-        appendHours.innerHTML = "0" + hours;
-        minutes = 0;
-        appendMinutes.innerHTML = "0" + 0;
-      }
-      console.log(projectCost);
-    }
-
     s.start = function(projectCost) {
-      if (!timer) {
-        timer = true;
-        clearInterval(Interval);
-        buttonStart.innerHTML = "Пауза";
-        Interval = setInterval(s.startTimer, 1);
-      } else if (timer) {
-        clearInterval(Interval);
-        buttonStart.innerHTML = "Продолжить";
-        timer = false;
+      if (timer) {
+        $interval.cancel(timer);
+        timer = null;
+        timerVal = timerVal + curDate;
+        s.startBtnText = 'Продолжить';
+      } else {
+        if(!startDate){
+          startDate = new Date();
+          timerVal = 0;
+        }
+        curTimerStart = new Date();
+        timer = $interval(function(){
+          curDate = new Date() - curTimerStart;
+          s.timer = timerVal + curDate;
+        }, 1000);
+        s.startBtnText = 'Пауза';
       }
-      hourCost = timeCost.value;
-      console.log(hourCost);
     };
 
     s.reset = function() {
-
-      clearInterval(Interval);
-      var currentTime = hours + ":" + minutes + ":" + seconds;
-      seconds = "00";
-      minutes = "00";
-      hours = "00";
-      appendHours.innerHTML = hours;
-      appendSeconds.innerHTML = seconds;
-      appendMinutes.innerHTML = minutes;
-      showTaskName.innerHTML = "";
-      buttonStart.innerHTML = "Начать";
-      s.saveTask(currentTime, projectCost);
+      if(timer){
+        $interval.cancel(timer);
+        timer = null;
+      }
+      s.saveTask();
+      s.startBtnText = 'Начать';
     }
 
-    s.saveTask = function(currentTime, projectCost) {
-      if (!taskName.value) {
-        name = "(Без названия)";
-      } else {
-        var name = taskName.value;
+    s.saveTask = function() {
+      if(!s.newTask.name){
+        s.newTask.name = '(Без названия)';
       }
-      var task = new Task(name, currentTime, projectCost);
-      s.tasks.push(task);
+      s.newTask.time = s.timer;
+      s.tasks.push(s.newTask);
+      s.newTask = {
+        name: null,
+        time: null,
+        cost: null
+      }
       localStorage.tasks = JSON.stringify(s.tasks);
-
-      console.log(s.tasks);
     }
 
     $rootScope.currentPage = 'home';
-  }
-  HomeController.$inject = ["$scope", "$log", "$rootScope"];;
+  };
 
   // @ngInject
   function HomeConfig($stateProvider) {
@@ -245,12 +201,14 @@
         controllerAs: 'hc'
       });
   }
-  HomeConfig.$inject = ["$stateProvider"];
 })();
 
 ;(function(){
   'use strict';
 
+  RegistrationController.$inject = ["registration", "$rootScope"];
+  registrationFactory.$inject = ["dbc", "$rootScope", "users"];
+  registrationConfig.$inject = ["$stateProvider"];
   angular.module('time.registration', [
     'time.dbc',
     'time.users',
@@ -290,7 +248,6 @@
     }
 
   }
-  RegistrationController.$inject = ["registration", "$rootScope"];
 
   // @ngInject
   function registrationFactory(dbc, $rootScope, users){
@@ -346,7 +303,6 @@
 
     return o;
   }
-  registrationFactory.$inject = ["dbc", "$rootScope", "users"];
 
   // @ngInject
   function registrationConfig($stateProvider){
@@ -366,7 +322,6 @@
         controllerAs: 'rc'
       });
   }
-  registrationConfig.$inject = ["$stateProvider"];
 
 })();
 
@@ -374,6 +329,9 @@
 (function() {
   'use strict';
 
+  UsersController.$inject = ["$scope", "$log", "$rootScope", "users"];
+  UsersConfig.$inject = ["$stateProvider"];
+  usersFactory.$inject = ["$q", "$http", "dbc", "$firebaseArray", "$firebaseObject"];
   angular
     .module('time.users', [
       'time.dbc'
@@ -400,7 +358,6 @@
 
     $rootScope.currentPage = 'users';
   }
-  UsersController.$inject = ["$scope", "$log", "$rootScope", "users"];
 
   // @ngInject
   function UsersConfig($stateProvider){
@@ -430,7 +387,6 @@
       }
       });
   }
-  UsersConfig.$inject = ["$stateProvider"];
 
   // @ngInject
   function usersFactory ($q, $http, dbc, $firebaseArray, $firebaseObject) {
@@ -453,5 +409,4 @@
 
     return o;
   }
-  usersFactory.$inject = ["$q", "$http", "dbc", "$firebaseArray", "$firebaseObject"];
 })();

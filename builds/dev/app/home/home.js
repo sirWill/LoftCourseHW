@@ -14,110 +14,65 @@
    * Home Controller
    */
   // @ngInject
-  function HomeController($scope, $log, $rootScope) {
+  function HomeController($scope, $log, $rootScope, $interval) {
     $log.debug('HomeController');
     var s = this;
 
-    var minutes = '00';
-    var seconds = '00';
-    var hours = '00';
-    var showTaskName = document.getElementById('showTaskName');
-    var Interval;
-    var timer = false;
-    var hourCost;
-    var projectCost = 0;
+    s.timer = null;
 
-    var appendSeconds = document.getElementById("seconds");
-    var appendMinutes = document.getElementById("minutes");
-    var appendHours = document.getElementById("hours");
-    var buttonStart = document.getElementById('button-start');
-    var buttonStop = document.getElementById('button-stop');
-    var buttonReset = document.getElementById('button-reset');
-    var taskName = document.getElementById('taskName');
-    var timeCost = document.getElementById('timeCost');
+    s.newTask = {
+      name: null,
+      time: null,
+      cost: null
+    };
+
+    var startDate, curDate, curTimerStart, timerVal, timer = null;
+
+    s.startBtnText = 'Начать';
 
     s.tasks = [];
 
-    function Task(name, time, cost) {
-      this.name = name;
-      this.time = time;
-      this.cost = cost;
-    }
-
-    s.startTimer = function() {
-      seconds++;
-
-      if (seconds < 9) {
-        appendSeconds.innerHTML = "0" + seconds;
-      }
-
-      if (seconds > 9) {
-        appendSeconds.innerHTML = seconds;
-
-      }
-
-      if (seconds > 59) {
-        minutes++;
-        appendMinutes.innerHTML = "0" + minutes;
-        seconds = 0;
-        appendSeconds.innerHTML = "0" + 0;
-      }
-
-      if (minutes > 9) {
-        appendMinutes.innerHTML = minutes;
-      }
-
-      if (minutes > 59) {
-        hours++;
-        projectCost = projectCost + +hourCost;
-        appendHours.innerHTML = "0" + hours;
-        minutes = 0;
-        appendMinutes.innerHTML = "0" + 0;
-      }
-      console.log(projectCost);
-    }
-
     s.start = function(projectCost) {
-      if (!timer) {
-        timer = true;
-        clearInterval(Interval);
-        buttonStart.innerHTML = "Пауза";
-        Interval = setInterval(s.startTimer, 1);
-      } else if (timer) {
-        clearInterval(Interval);
-        buttonStart.innerHTML = "Продолжить";
-        timer = false;
+      if (timer) {
+        $interval.cancel(timer);
+        timer = null;
+        timerVal = timerVal + curDate;
+        s.startBtnText = 'Продолжить';
+      } else {
+        if(!startDate){
+          startDate = new Date();
+          timerVal = 0;
+        }
+        curTimerStart = new Date();
+        timer = $interval(function(){
+          curDate = new Date() - curTimerStart;
+          s.timer = timerVal + curDate;
+        }, 1000);
+        s.startBtnText = 'Пауза';
       }
-      hourCost = timeCost.value;
-      console.log(hourCost);
     };
 
     s.reset = function() {
-
-      clearInterval(Interval);
-      var currentTime = hours + ":" + minutes + ":" + seconds;
-      seconds = "00";
-      minutes = "00";
-      hours = "00";
-      appendHours.innerHTML = hours;
-      appendSeconds.innerHTML = seconds;
-      appendMinutes.innerHTML = minutes;
-      showTaskName.innerHTML = "";
-      buttonStart.innerHTML = "Начать";
-      s.saveTask(currentTime, projectCost);
+      if(timer){
+        $interval.cancel(timer);
+        timer = null;
+      }
+      s.saveTask();
+      s.startBtnText = 'Начать';
     }
 
-    s.saveTask = function(currentTime, projectCost) {
-      if (!taskName.value) {
-        name = "(Без названия)";
-      } else {
-        var name = taskName.value;
+    s.saveTask = function() {
+      if(!s.newTask.name){
+        s.newTask.name = '(Без названия)';
       }
-      var task = new Task(name, currentTime, projectCost);
-      s.tasks.push(task);
+      s.newTask.time = s.timer;
+      s.tasks.push(s.newTask);
+      s.newTask = {
+        name: null,
+        time: null,
+        cost: null
+      }
       localStorage.tasks = JSON.stringify(s.tasks);
-
-      console.log(s.tasks);
     }
 
     $rootScope.currentPage = 'home';

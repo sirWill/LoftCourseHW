@@ -9,12 +9,26 @@
       $log.debug('Home Run')
     })
     .config(HomeConfig)
+    .factory('HomeFactory', HomeFactory)
 
+
+
+  /**
+   * Home Factory
+   */
+  // @ngInject
+  function HomeFactory(){
+    var o = {};
+    o.tasks = [];
+    return o;
+  }
   /**
    * Home Controller
    */
   // @ngInject
-  function HomeController($scope, $log, $rootScope, $interval) {
+
+  function HomeController($scope, $log, $rootScope, $interval, HomeFactory) {
+
     $log.debug('HomeController');
     var s = this;
 
@@ -29,8 +43,6 @@
     var startDate, curDate, curTimerStart, timerVal, timer = null;
 
     s.startBtnText = 'Начать';
-
-    s.tasks = [];
 
     s.start = function(projectCost) {
       if (timer) {
@@ -66,7 +78,7 @@
         s.newTask.name = '(Без названия)';
       }
       s.newTask.time = s.timer;
-      s.tasks.push(s.newTask);
+      HomeFactory.tasks.push(s.newTask);
       s.newTask = {
         name: null,
         time: null,
@@ -77,6 +89,7 @@
 
     $rootScope.currentPage = 'home';
   };
+
 
   // @ngInject
   function HomeConfig($stateProvider) {

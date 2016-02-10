@@ -9,7 +9,7 @@
       $log.debug('Home Run')
     })
     .config(HomeConfig)
-    .factory('HomeFactory', HomeFactory)
+    .factory('tasks', tasksFactory)
 
 
 
@@ -17,28 +17,58 @@
    * Home Factory
    */
   // @ngInject
-  function HomeFactory(){
+  function tasksFactory(){
     var o = {};
-    o.tasks = [];
+    var tasks = [];
+
+    var lst = localStorage.tasks;
+
+    function restoreTasksFromLocalStorage(){
+      if(localStorage.getItem('tasks'))
+        tasks = JSON.parse(localStorage.getItem('tasks'));
+    }
+
+    function saveTasksToLocalStorage(){
+      localStorage.tasks = JSON.stringify(tasks);
+    }
+
+    o.getAll = function(){
+      if(tasks.length == 0)
+        restoreTasksFromLocalStorage();
+      return tasks;
+    };
+
+    o.addTask = function(_n){
+      _n.name = _n.name || '(Без названия)';
+      tasks.push(_n);
+      saveTasksToLocalStorage();
+    }
+
     return o;
   }
+
   /**
    * Home Controller
    */
   // @ngInject
 
-  function HomeController($scope, $log, $rootScope, $interval, HomeFactory) {
+  function HomeController($scope, $log, $rootScope, $interval, tasks) {
 
     $log.debug('HomeController');
     var s = this;
 
     s.timer = null;
 
-    s.newTask = {
-      name: null,
-      time: null,
-      cost: null
+    function resetNewTask(){
+      s.newTask = {
+        name: null,
+        time: null,
+        cost: null
+      };
     };
+    resetNewTask();
+
+    s.tasks = tasks.getAll();
 
     var startDate, curDate, curTimerStart, timerVal, timer = null;
 
@@ -74,17 +104,9 @@
     }
 
     s.saveTask = function() {
-      if(!s.newTask.name){
-        s.newTask.name = '(Без названия)';
-      }
       s.newTask.time = s.timer;
-      HomeFactory.tasks.push(s.newTask);
-      s.newTask = {
-        name: null,
-        time: null,
-        cost: null
-      }
-      localStorage.tasks = JSON.stringify(s.tasks);
+      tasks.addTask(s.newTask);
+      resetNewTask();
     }
 
     $rootScope.currentPage = 'home';

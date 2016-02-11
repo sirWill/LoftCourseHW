@@ -4,6 +4,7 @@ var gulp = require('gulp'),
     concat = require('gulp-concat'),
     scss = require('gulp-sass'),
     uglify = require('gulp-uglify'),
+    plumber = require('gulp-plumber'),
     ngAnnotate = require('gulp-ng-annotate'),
     webserver = require('gulp-webserver');
 
@@ -13,6 +14,7 @@ gulp.task('js',function(){
       '!builds/dev/app/**/*_test.js'
     ])
     .pipe(concat('app.js'))
+    .pipe(plumber())
     .pipe(ngAnnotate())
     // .pipe(uglify())
     .pipe(gulp.dest('builds/dev'));
@@ -30,6 +32,7 @@ gulp.task('js',function(){
 
 gulp.task('css', function(){
   gulp.src('builds/dev/app/**/*.scss')
+    .pipe(plumber())
     .pipe(scss())
     .pipe(concat('app.css'))
     .pipe(gulp.dest('builds/dev'));

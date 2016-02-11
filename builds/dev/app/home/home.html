@@ -41,7 +41,7 @@
     </thead>
 
     <tbody>
-      <tr ng-repeat="task in hc.tasks">
+      <tr ng-repeat="task in hc.tasks track by $index">
         <td>{{$index+1}}</td>
         <td><input type="text" class="task-inner" placeholder={{task.name}}></td>
         <td>{{task.time | date:'HH:mm:ss':'+0000' }}</td>

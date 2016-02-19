@@ -17,31 +17,25 @@
    * Home Factory
    */
   // @ngInject
-  function tasksFactory(){
+  function tasksFactory($q, $http, dbc, $firebaseArray, $firebaseObject, registration, $rootScope){
     var o = {};
+    var ref = dbc.getRef();
+    var usersRef = ref.child('users');
+    var userRef = usersRef.child('e5cbb945-27f1-48f3-834c-786144653b7a');
+    var userTasks = userRef.child('tasks');
     var tasks = [];
 
-    var lst = localStorage.tasks;
 
-    function restoreTasksFromLocalStorage(){
-      if(localStorage.getItem('tasks'))
-        tasks = JSON.parse(localStorage.getItem('tasks'));
-    }
-
-    function saveTasksToLocalStorage(){
-      localStorage.tasks = JSON.stringify(tasks);
-    }
-
-    o.getAll = function(){
-      if(tasks.length == 0)
-        restoreTasksFromLocalStorage();
+    o.getAllTasks = function(){
+      tasks = $firebaseArray(userTasks);
       return tasks;
-    };
-
-    o.addTask = function(_n){
-      _n.name = _n.name || '(Без названия)';
-      tasks.push(_n);
-      saveTasksToLocalStorage();
+    }
+    o.addNewTask = function(_newTask){
+      tasks.$add({
+        name: _newTask.name || "(Без названия)",
+        time: _newTask.time || "(Не определено)",
+        cost: _newTask.cost || "(Не определена)"
+      })
     }
 
     return o;
@@ -59,16 +53,12 @@
 
     s.timer = null;
 
-    function resetNewTask(){
-      s.newTask = {
-        name: null,
-        time: null,
-        cost: null
-      };
+    s.tasks = tasks.getAllTasks();
+    s.newTask = {
+      name: null,
+      time: null,
+      cost: null
     };
-    resetNewTask();
-
-    s.tasks = tasks.getAll();
 
     var startDate, curDate, curTimerStart, timerVal, timer = null;
 
@@ -105,8 +95,7 @@
 
     s.saveTask = function() {
       s.newTask.time = s.timer;
-      tasks.addTask(s.newTask);
-      resetNewTask();
+      tasks.addNewTask(s.newTask);
     }
 
     $rootScope.currentPage = 'home';

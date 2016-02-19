@@ -7,6 +7,7 @@
       'ui.router',
       'ui.bootstrap',
       'time.home',
+      'time.tasks',
       'time.users',
       'time.registration',
       'time.dbc',

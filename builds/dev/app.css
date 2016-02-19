@@ -1,3 +1,4 @@
 .task-inner {
   outline: none;
-  border: none; }
+  border: none;
+  width: 100%; }

@@ -34,9 +34,6 @@
         <th>
           Стоимость
         </th>
-        <th>
-          Состояние
-        </th>
       </tr>
     </thead>
 
@@ -46,7 +43,6 @@
         <td><input type="text" class="task-inner" placeholder={{task.name}}></td>
         <td>{{task.time | date:'HH:mm:ss':'+0000' }}</td>
         <td>{{ task.time/3600000 * task.cost | currency:"USD$ "}}</td>
-        <td>00</td>
       </tr>
     </tbody>
   </table>

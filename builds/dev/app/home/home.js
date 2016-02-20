@@ -19,12 +19,14 @@
   // @ngInject
   function tasksFactory($q, $http, dbc, $firebaseArray, $firebaseObject, registration, $rootScope){
     var o = {};
-    var ref = dbc.getRef();
-    var usersRef = ref.child('users');
-    var userRef = usersRef.child('e5cbb945-27f1-48f3-834c-786144653b7a');
-    var userTasks = userRef.child('tasks');
-    var tasks = [];
 
+     var ref = dbc.getRef();
+     var authRef = dbc.isLogin();
+     var curuserref = authRef.uid;
+     var usersRef = ref.child('users');
+     var userRef = usersRef.child(curuserref);
+     var userTasks = userRef.child('tasks');
+     var tasks = [];
 
     o.getAllTasks = function(){
       tasks = $firebaseArray(userTasks);

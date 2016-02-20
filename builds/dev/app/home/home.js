@@ -22,10 +22,12 @@
 
      var ref = dbc.getRef();
      var authRef = dbc.isLogin();
-     var curuserref = authRef.uid;
+     var curUserRef = authRef.uid;
      var usersRef = ref.child('users');
-     var userRef = usersRef.child(curuserref);
+     var userRef = usersRef.child(curUserRef);
      var userTasks = userRef.child('tasks');
+
+
      var tasks = [];
 
     o.getAllTasks = function(){
@@ -39,7 +41,10 @@
         cost: _newTask.cost || "(Не определена)"
       })
     }
-
+    o.deletTask = function(_task){
+      var taskID = _task.$id;
+      return $firebaseObject(userTasks.child(taskID)).$remove();
+    }
     return o;
   }
 
@@ -98,6 +103,9 @@
     s.saveTask = function() {
       s.newTask.time = s.timer;
       tasks.addNewTask(s.newTask);
+    }
+    s.deletTask = function(_d) {
+      tasks.deletTask(_d)
     }
 
     $rootScope.currentPage = 'home';

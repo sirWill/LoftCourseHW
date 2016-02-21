@@ -17,33 +17,34 @@
    * Home Factory
    */
   // @ngInject
-  function tasksFactory(){
+  function tasksFactory($q, $http, dbc, $firebaseArray, $firebaseObject, registration, $rootScope){
     var o = {};
-    var tasks = [];
 
-    var lst = localStorage.tasks;
+     var ref = dbc.getRef();
+     var authRef = dbc.isLogin();
+     var curUserRef = authRef.uid;
+     var usersRef = ref.child('users');
+     var userRef = usersRef.child(curUserRef);
+     var userTasks = userRef.child('tasks');
 
-    function restoreTasksFromLocalStorage(){
-      if(localStorage.getItem('tasks'))
-        tasks = JSON.parse(localStorage.getItem('tasks'));
-    }
 
-    function saveTasksToLocalStorage(){
-      localStorage.tasks = JSON.stringify(tasks);
-    }
+     var tasks = [];
 
-    o.getAll = function(){
-      if(tasks.length == 0)
-        restoreTasksFromLocalStorage();
+    o.getAllTasks = function(){
+      tasks = $firebaseArray(userTasks);
       return tasks;
-    };
-
-    o.addTask = function(_n){
-      _n.name = _n.name || '(Без названия)';
-      tasks.push(_n);
-      saveTasksToLocalStorage();
     }
-
+    o.addNewTask = function(_newTask){
+      tasks.$add({
+        name: _newTask.name || "(Без названия)",
+        time: _newTask.time || "(Не определено)",
+        cost: _newTask.cost || "(Не определена)"
+      })
+    }
+    o.deletTask = function(_task){
+      var taskID = _task.$id;
+      return $firebaseObject(userTasks.child(taskID)).$remove();
+    }
     return o;
   }
 
@@ -59,16 +60,12 @@
 
     s.timer = null;
 
-    function resetNewTask(){
-      s.newTask = {
-        name: null,
-        time: null,
-        cost: null
-      };
+    s.tasks = tasks.getAllTasks();
+    s.newTask = {
+      name: null,
+      time: null,
+      cost: null
     };
-    resetNewTask();
-
-    s.tasks = tasks.getAll();
 
     var startDate, curDate, curTimerStart, timerVal, timer = null;
 
@@ -105,8 +102,10 @@
 
     s.saveTask = function() {
       s.newTask.time = s.timer;
-      tasks.addTask(s.newTask);
-      resetNewTask();
+      tasks.addNewTask(s.newTask);
+    }
+    s.deletTask = function(_d) {
+      tasks.deletTask(_d)
     }
 
     $rootScope.currentPage = 'home';

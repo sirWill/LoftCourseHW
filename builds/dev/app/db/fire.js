@@ -14,6 +14,7 @@
     o.getRef = function(){
       return ref;
     }
+
     o.get$Auth = function(){
       return auth;
     }
